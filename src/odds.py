@@ -1,8 +1,6 @@
 import httpx
 import os
 from dotenv import load_dotenv
-import asyncio
-from collections import defaultdict
 
 load_dotenv()
 
