@@ -1,5 +1,7 @@
 import httpx
 import os
+import asyncio
+from models import Sport, Region, BettingMarkets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,9 +10,12 @@ API_KEY = os.getenv("ODDS_API_KEY")
 BASE_URL = "https://api.the-odds-api.com/v4"
 
 ##the goal is to find the best sportsbook odds per game
-async def fetch_odds(sport: str, regions: str = "us", markets: list = ["h2h"]):
+async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, markets: list[BettingMarkets] = [BettingMarkets.MONEYLINE]):
   async with httpx.AsyncClient() as client:
     try:
+      sport = sport.value
+      regions = regions.value
+      markets = [m.value for m in markets]
       res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": ','.join(markets)})
       data = res.json()
       odds_per_game = {}
@@ -20,9 +25,13 @@ async def fetch_odds(sport: str, regions: str = "us", markets: list = ["h2h"]):
           j = 0
           while j < len(game['bookmakers'][i]['markets']):
             if game['bookmakers'][i]['markets'][j].get('key') in markets:
-              list_of_outcomes.append((game['bookmakers'][i]['title'] , game['bookmakers'][i]['markets'][j].get('outcomes')))
+              list_of_outcomes.append((
+                game['bookmakers'][i]['title'],
+                game['bookmakers'][i]['markets'][j].get('key'),
+                game['bookmakers'][i]['markets'][j].get('outcomes')
+              ))
             j+=1
-        odds_per_game[f"{game.get('id')}" + '___' + f"{game.get('commence_time')}"] = list_of_outcomes
+        odds_per_game[f"{game.get('home_team')}" + ' vs ' + f"{game.get('away_team')}" + ' at ' + f"{game.get('commence_time')}"] = list_of_outcomes
       best_odds_per_game = {}
       for game in odds_per_game.keys():
         best_odds = 0
@@ -30,14 +39,18 @@ async def fetch_odds(sport: str, regions: str = "us", markets: list = ["h2h"]):
         inner_best_index = 0
         for i in range(len(odds_per_game.get(game))):
           j = 0
-          while j < len(odds_per_game.get(game)[i][1]):
+          while j < len(odds_per_game.get(game)[i][2]):
             old_best_odds = best_odds
-            best_odds = max(odds_per_game.get(game)[i][1][j].get('price'), old_best_odds)
+            best_odds = max(odds_per_game.get(game)[i][2][j].get('price'), old_best_odds)
             if best_odds != old_best_odds:
               best_index = i
               inner_best_index = j
             j+=1
-          best_odds_per_game[game] = (odds_per_game.get(game)[best_index][0] ,odds_per_game.get(game)[best_index][1][inner_best_index])
+          best_odds_per_game[game] = (odds_per_game.get(game)[best_index][0], odds_per_game.get(game)[best_index][1] ,odds_per_game.get(game)[best_index][2][inner_best_index])
       return best_odds_per_game
-    except httpx.RequestError as e:
-      print(f"Request failed: {e}")
+    except Exception as e:
+      import traceback
+      traceback.print_exc()
+      print(f"Error: {e}")
+
+print(asyncio.run(fetch_odds(Sport.NFL, Region.UNITED_STATES, [BettingMarkets.MONEYLINE, BettingMarkets.POINTS_SPREAD])))

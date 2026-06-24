@@ -103,3 +103,15 @@ class BettingMarkets(str, Enum):
     MONEYLINE_3_WAY = "h2h_3_way"
     TEAM_TOTALS = "team_totals"
     ALTERNATE_TEAM_TOTALS = "alternate_team_totals"
+
+class Region(str, Enum):
+    UNITED_STATES = "us"
+    UNITED_STATES_EXCHANGE = "us_ex"
+    UNITED_STATES_DAILY_FANTASY_SPORTS = "us_dfs"
+    UNITED_STATES_2 = "us_2"
+    UNITED_KINGDOM = "uk"
+    EUROPE = "eu"
+    FRANCE = "fr"
+    SWEDEN = "se"
+    AUSTRALIA = "au"
+
