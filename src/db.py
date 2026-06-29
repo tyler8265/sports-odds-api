@@ -34,6 +34,8 @@ def get_snapshots(game=None):
       cursor.execute("SELECT * FROM snapshots")
     rows = cursor.fetchall()
     for row in rows:
+      row = list(row)
+      row[3] = json.loads(row[3])
       snapshots.append(row)
   return snapshots
 
