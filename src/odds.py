@@ -28,7 +28,8 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
               list_of_outcomes.append((
                 game['bookmakers'][i]['title'],
                 game['bookmakers'][i]['markets'][j].get('key'),
-                game['bookmakers'][i]['markets'][j].get('outcomes')
+                game['bookmakers'][i]['markets'][j].get('outcomes'),
+                game['sport_key']
               ))
             j+=1
         odds_per_game[f"{game.get('home_team')}" + ' vs ' + f"{game.get('away_team')}" + ' at ' + f"{game.get('commence_time')}"] = list_of_outcomes
@@ -46,7 +47,7 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
               best_index = i
               inner_best_index = j
             j+=1
-          best_odds_per_game[game] = (odds_per_game.get(game)[best_index][0], odds_per_game.get(game)[best_index][1] ,odds_per_game.get(game)[best_index][2][inner_best_index])
+          best_odds_per_game[game] = (odds_per_game.get(game)[best_index][0], odds_per_game.get(game)[best_index][3], odds_per_game.get(game)[best_index][1] ,odds_per_game.get(game)[best_index][2][inner_best_index])
       return best_odds_per_game
     except Exception as e:
       import traceback
