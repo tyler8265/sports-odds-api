@@ -28,7 +28,7 @@ def get_snapshots(game=None):
   snapshots = []
   with sqlite3.connect("odds.db") as conn:
     cursor = conn.cursor()
-    if(game):
+    if game:
       cursor.execute("SELECT * FROM snapshots WHERE game LIKE ?", (f"%{game}%",))
     else:
       cursor.execute("SELECT * FROM snapshots")
