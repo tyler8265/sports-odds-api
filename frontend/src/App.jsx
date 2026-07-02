@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://3.133.88.218:8000";
+const API_BASE = "/api";
 
 const SPORTS = [
   { label: "NFL", value: "americanfootball_nfl" },
