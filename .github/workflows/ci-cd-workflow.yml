@@ -56,6 +56,8 @@ jobs:
             docker pull tyler8265/odds-api-repo:latest
             docker stop odds_api || true
             docker rm odds_api || true
+            docker stop $(docker ps -q --filter "publish=8000") || true
+            docker rm $(docker ps -aq --filter "publish=8000") || true
             docker run -d -p 8000:8000 --env-file .env --name odds_api tyler8265/odds-api-repo:latest
 
 
