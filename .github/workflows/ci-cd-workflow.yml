@@ -42,6 +42,21 @@ jobs:
         with:
           push: true
           tags: tyler8265/odds-api-repo:latest
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull tyler8265/odds-api-repo:latest
+            docker stop odds_api || true
+            docker rm odds_api || true
+            docker run -d -p 8000:8000 --env-file .env --name odds_api tyler8265/odds-api-repo:latest
 
 
 

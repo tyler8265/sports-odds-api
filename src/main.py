@@ -3,13 +3,21 @@ from odds import fetch_odds
 from models import Sport, BettingMarkets, Region
 from db import save_snapshot, get_snapshots, init_db
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
+
 
 @asynccontextmanager
 async def db_session(app: FastAPI):
   init_db()
   yield
 app = FastAPI(lifespan=db_session)
-##random comment so i can pus
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/")
 async def root():
   return {"message": "Welcome to Tyler's Sports Betting Odds Aggregator!"}
