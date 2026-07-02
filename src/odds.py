@@ -18,7 +18,7 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
       sport = sport.value
       regions = regions.value
       markets = [m.value for m in markets]
-      res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": ','.join(markets)})
+      res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": ','.join(markets), "oddsFormat": "decimal"})
       data = res.json()
       if data is None:
         data = {}
