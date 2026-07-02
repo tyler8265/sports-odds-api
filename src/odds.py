@@ -57,5 +57,3 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
       import traceback
       traceback.print_exc()
       print(f"Error: {e}")
-
-print(asyncio.run(fetch_odds(Sport.NFL, Region.UNITED_STATES, [BettingMarkets.MONEYLINE, BettingMarkets.POINTS_SPREAD])))

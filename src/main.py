@@ -1,9 +1,14 @@
 from fastapi import FastAPI, Query
 from odds import fetch_odds
 from models import Sport, BettingMarkets, Region
-from db import save_snapshot, get_snapshots
+from db import save_snapshot, get_snapshots, init_db
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+@asynccontextmanager
+async def db_session(app: FastAPI):
+  init_db()
+  yield
+app = FastAPI(lifespan=db_session)
 
 @app.get("/")
 async def root():
@@ -17,6 +22,8 @@ async def get_history(game: str):
 @app.get("/odds/{sport}")
 async def get_odds(sport: Sport, region: Region = Region.UNITED_STATES, markets: list[BettingMarkets] = Query(default = [BettingMarkets.MONEYLINE])):
   odds = await fetch_odds(sport, region, markets)
+  if odds is None:
+    odds = {}
   for game in odds:
     save_snapshot(game, odds.get(game))
   return {"odds": odds}
