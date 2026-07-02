@@ -9,7 +9,7 @@ async def db_session(app: FastAPI):
   init_db()
   yield
 app = FastAPI(lifespan=db_session)
-
+##random comment so i can push
 @app.get("/")
 async def root():
   return {"message": "Welcome to Tyler's Sports Betting Odds Aggregator!"}
