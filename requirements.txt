@@ -1,7 +1,9 @@
 fastapi
 uvicorn
 httpx
+psycopg2-binary
 python-dotenv
 pytest
 pytest-asyncio
 fastapi[standard]
+

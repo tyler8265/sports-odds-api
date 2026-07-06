@@ -24,6 +24,7 @@ jobs:
       - name: Run tests
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL}}
         run: pytest -v
   build:
     needs: test
