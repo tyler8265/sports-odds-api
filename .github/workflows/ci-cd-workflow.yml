@@ -7,26 +7,9 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: sports_odds_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,25 +21,11 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
-      - name: Initialize Database Schema
-        env:
-          PGPASSWORD: test_password
-        run: |
-          psql -h localhost -U test_user -d sports_odds_test -c "
-          CREATE TABLE IF NOT EXISTS snapshots (
-              id SERIAL PRIMARY KEY,
-              sport VARCHAR(255),
-              game VARCHAR(255),
-              data JSONB,
-              fetched_at TIMESTAMP
-          );"
-
       - name: Run tests
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          DATABASE_URL: "postgresql://test_user:test_password@localhost:5432/sports_odds_test"
+          DATABASE_URL: ${{ secrets.DATABASE_URL}}
         run: pytest -v
-
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -74,7 +43,6 @@ jobs:
         with:
           push: true
           tags: tyler8265/odds-api-repo:latest
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -92,3 +60,10 @@ jobs:
             docker stop $(docker ps -q --filter "publish=8000") || true
             docker rm $(docker ps -aq --filter "publish=8000") || true
             docker run -d -p 8000:8000 --env-file .env --name odds_api tyler8265/odds-api-repo:latest
+
+
+
+
+
+
+

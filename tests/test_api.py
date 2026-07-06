@@ -1,14 +1,19 @@
 from fastapi.testclient import TestClient
 from main import app
+from unittest.mock import MagicMock, patch
 
 client = TestClient(app)
 
-def test_get_odds():
+@patch("db.save_snapshot")
+def test_get_odds(mock_save):
+    mock_save.return_value = None
     res = client.get("/odds/americanfootball_nfl")
     assert res.status_code == 200
     assert "odds" in res.json()
 
-def test_odds_response_shape():
+@patch("db.save_snapshot")
+def test_odds_response_shape(mock_save):
+    mock_save.return_value = None
     res = client.get("/odds/americanfootball_nfl")
     odds = res.json()["odds"]
     first_game = list(odds.values())[0]
