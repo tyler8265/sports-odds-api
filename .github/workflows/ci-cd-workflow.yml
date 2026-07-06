@@ -59,10 +59,7 @@ jobs:
             docker rm odds_api || true
             docker stop $(docker ps -q --filter "publish=8000") || true
             docker rm $(docker ps -aq --filter "publish=8000") || true
-            docker run -d -p 8000:8000 \
-              -e ODDS_API_KEY=${{ secrets.ODDS_API_KEY }} \
-              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-              --name odds_api tyler8265/odds-api-repo:latest
+            docker run -d -p 8000:8000 -e ODDS_API_KEY=${{ secrets.ODDS_API_KEY }} -e DATABASE_URL=${{ secrets.DATABASE_URL }} --name odds_api tyler8265/odds-api-repo:latest
 
 
 
