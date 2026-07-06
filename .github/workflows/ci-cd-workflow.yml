@@ -38,6 +38,19 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      - name: Initialize Database Schema
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h localhost -U test_user -d sports_odds_test -c "
+          CREATE TABLE IF NOT EXISTS snapshots (
+              id SERIAL PRIMARY KEY,
+              sport VARCHAR(255),
+              game VARCHAR(255),
+              data JSONB,
+              fetched_at TIMESTAMP
+          );"
+
       - name: Run tests
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
