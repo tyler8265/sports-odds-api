@@ -92,8 +92,8 @@ function Badge({ text }) {
 function OddsCard({ game, data }) {
   const [bookmaker, sport, market, outcome] = data;
   const [stake, setStake] = useState("");
-  const teams = game.split(" at ")[0];
-  const time = game.split(" at ")[1];
+  const teams = game.split("___")[0].split(" at ")[0];
+  const time = game.split("___")[0].split(" at ")[1];
   const date = time ? new Date(time).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
 
   const price = outcome?.price;
