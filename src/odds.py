@@ -26,14 +26,22 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
       sport = sport.value
       regions = regions.value
       markets = [m.value for m in markets]
-      res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": ','.join(markets), "oddsFormat": "decimal"})
-      data = res.json()
-      if isinstance(data, dict):
-        data = []
-      if data is None:
-        data = {}
+
+      all_data = {}
+      for market in markets:
+        res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": market, "oddsFormat": "decimal"})
+        data = res.json()
+        if not isinstance(data, list):
+          continue
+        for game in data:
+          game_key = f"{game.get('home_team')} vs {game.get('away_team')} at {game.get('commence_time')}"
+          if game_key not in all_data:
+            all_data[game_key] = game
+          else:
+            all_data[game_key]['bookmakers'].extend(game['bookmakers'])
+
       odds_per_game = {}
-      for game in data:
+      for game_key, game in all_data.items():
         list_of_outcomes = []
         for i in range(len(game['bookmakers'])):
           j = 0
@@ -48,7 +56,8 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
             j+=1
         if not list_of_outcomes:
           continue
-        odds_per_game[f"{game.get('home_team')}" + ' vs ' + f"{game.get('away_team')}" + ' at ' + f"{game.get('commence_time')}"] = list_of_outcomes
+        odds_per_game[game_key] = list_of_outcomes
+
       best_odds_per_game = {}
       for game in odds_per_game.keys():
         best_odds = 0
@@ -63,10 +72,9 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
               best_index = i
               inner_best_index = j
             j+=1
-          best_odds_per_game[game] = (odds_per_game[game][best_index][0], odds_per_game[game][best_index][3], odds_per_game[game][best_index][1] ,odds_per_game[game][best_index][2][inner_best_index])
+          best_odds_per_game[game] = (odds_per_game[game][best_index][0], odds_per_game[game][best_index][3], odds_per_game[game][best_index][1], odds_per_game[game][best_index][2][inner_best_index])
       return best_odds_per_game
     except Exception as e:
       import traceback
       traceback.print_exc()
       print(f"Error: {e}")
-
