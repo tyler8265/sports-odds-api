@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const API_BASE = "/api";
 
@@ -35,7 +35,6 @@ const SPORTS = [
   { label: "Primeira Liga", value: "soccer_portugal_primeira_liga" },
   { label: "Saudi Pro League", value: "soccer_saudi_arabia_pro_league" },
   { label: "Copa Libertadores", value: "soccer_conmebol_copa_libertadores" },
-  { label: "Copa America", value: "soccer_conmebol_copa_america" },
   { label: "World Cup", value: "soccer_fifa_world_cup" },
 ];
 
@@ -44,28 +43,44 @@ const MARKETS = [
   { label: "Spread", value: "spreads" },
   { label: "Over/Under", value: "totals" },
   { label: "Futures", value: "outrights" },
-  { label: "3-Way", value: "h2h_3_way" },
+  { label: "Moneyline Lay", value: "h2h_lay" },
+  { label: "Futures Lay", value: "outrights_lay" },
+  { label: "Alt Spreads", value: "alternate_spreads" },
+  { label: "Alt Totals", value: "alternate_totals" },
   { label: "Both Teams Score", value: "btts" },
   { label: "Draw No Bet", value: "draw_no_bet" },
+  { label: "3-Way", value: "h2h_3_way" },
   { label: "Team Totals", value: "team_totals" },
+  { label: "Alt Team Totals", value: "alternate_team_totals" },
 ];
 
 const MARKET_LABELS = {
-  h2h: "ML",
-  spreads: "SPR",
-  totals: "O/U",
-  outrights: "FUT",
-  h2h_3_way: "3W",
-  btts: "BTS",
-  draw_no_bet: "DNB",
-  team_totals: "TT",
+  h2h: "ML", spreads: "SPR", totals: "O/U", outrights: "FUT",
+  h2h_lay: "ML-L", outrights_lay: "FUT-L", alternate_spreads: "A-SPR",
+  alternate_totals: "A-O/U", btts: "BTS", draw_no_bet: "DNB",
+  h2h_3_way: "3W", team_totals: "TT", alternate_team_totals: "A-TT",
 };
+
+const REGIONS = [
+  { label: "United States", value: "us" },
+  { label: "United States (Exchange)", value: "us_ex" },
+  { label: "United States (DFS)", value: "us_dfs" },
+  { label: "United States 2", value: "us_2" },
+  { label: "United Kingdom", value: "uk" },
+  { label: "Europe", value: "eu" },
+  { label: "France", value: "fr" },
+  { label: "Sweden", value: "se" },
+  { label: "Australia", value: "au" },
+];
 
 function Badge({ text }) {
   const colors = {
     h2h: "bg-emerald-900 text-emerald-300 border border-emerald-700",
     spreads: "bg-blue-900 text-blue-300 border border-blue-700",
     totals: "bg-purple-900 text-purple-300 border border-purple-700",
+    outrights: "bg-yellow-900 text-yellow-300 border border-yellow-700",
+    h2h_3_way: "bg-orange-900 text-orange-300 border border-orange-700",
+    btts: "bg-pink-900 text-pink-300 border border-pink-700",
   };
   return (
     <span className={`text-xs font-mono px-2 py-0.5 rounded ${colors[text] || "bg-zinc-800 text-zinc-400"}`}>
@@ -171,12 +186,22 @@ function HistoryCard({ row }) {
 export default function App() {
   const [tab, setTab] = useState("odds");
   const [sport, setSport] = useState("americanfootball_nfl");
+  const [region, setRegion] = useState("us");
   const [markets, setMarkets] = useState(["h2h"]);
   const [odds, setOdds] = useState(null);
   const [history, setHistory] = useState(null);
+  const [historyGames, setHistoryGames] = useState([]);
   const [historyQuery, setHistoryQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (tab === "history" && historyGames.length === 0) {
+      fetch(`${API_BASE}/odds/history/games`)
+        .then((r) => r.json())
+        .then((json) => setHistoryGames(json.games || []));
+    }
+  }, [tab]);
 
   function toggleMarket(val) {
     setMarkets((prev) =>
@@ -192,6 +217,7 @@ export default function App() {
     try {
       const params = new URLSearchParams();
       markets.forEach((m) => params.append("markets", m));
+      params.append("region", region);
       const res = await fetch(`${API_BASE}/odds/${sport}?${params}`);
       const json = await res.json();
       setOdds(json.odds || {});
@@ -203,12 +229,12 @@ export default function App() {
   }
 
   async function fetchHistory() {
+    if (!historyQuery) return;
     setLoading(true);
     setError(null);
     setHistory(null);
     try {
-      const params = historyQuery ? `?game=${encodeURIComponent(historyQuery)}` : "";
-      const res = await fetch(`${API_BASE}/odds/history${params}`);
+      const res = await fetch(`${API_BASE}/odds/history?game=${encodeURIComponent(historyQuery)}`);
       const json = await res.json();
       setHistory(json["historical snapshots"] || []);
     } catch (e) {
@@ -259,8 +285,20 @@ export default function App() {
                 </select>
               </div>
               <div>
+                <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Region</label>
+                <select
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  className="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500"
+                >
+                  {REGIONS.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Markets</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {MARKETS.map((m) => (
                     <button
                       key={m.value}
@@ -304,7 +342,7 @@ export default function App() {
             )}
 
             {odds && oddsEntries.length === 0 && (
-              <p className="text-zinc-500 text-sm">No games found for this sport right now.</p>
+              <p className="text-zinc-500 text-sm">No games found for this sport and market combination.</p>
             )}
           </>
         )}
@@ -313,22 +351,25 @@ export default function App() {
           <>
             <div className="flex gap-3 mb-6">
               <div className="flex-1">
-                <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Search by team or matchup</label>
-                <input
-                  type="text"
+                <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Select Game</label>
+                <select
                   value={historyQuery}
                   onChange={(e) => setHistoryQuery(e.target.value)}
-                  placeholder="e.g. Patriots, Lakers..."
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500 placeholder-zinc-600"
-                />
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500"
+                >
+                  <option value="">-- Select a game --</option>
+                  {historyGames.map((g) => (
+                    <option key={g} value={g}>{g.split(" at ")[0]}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex items-end">
                 <button
                   onClick={fetchHistory}
-                  disabled={loading}
+                  disabled={loading || !historyQuery}
                   className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
                 >
-                  {loading ? "Loading..." : "Search"}
+                  {loading ? "Loading..." : "Load Snapshots"}
                 </button>
               </div>
             </div>
@@ -336,7 +377,7 @@ export default function App() {
             {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
             {history && history.length === 0 && (
-              <p className="text-zinc-500 text-sm">No snapshots found. Fetch some odds first to build history.</p>
+              <p className="text-zinc-500 text-sm">No snapshots found for this game.</p>
             )}
 
             {history && history.length > 0 && (

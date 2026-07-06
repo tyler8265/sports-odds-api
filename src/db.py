@@ -50,3 +50,11 @@ def get_snapshots(game=None):
                 row[3] = json.loads(row[3])
                 snapshots.append(row)
     return snapshots
+
+
+def get_distinct_games():
+  with get_conn() as conn:
+    with conn.cursor() as cursor:
+      cursor.execute("SELECT DISTINCT game FROM snapshots ORDER BY game")
+      rows = cursor.fetchall()
+      return [row[0] for row in rows]
