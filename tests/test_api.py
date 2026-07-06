@@ -2,6 +2,10 @@ from fastapi.testclient import TestClient
 from main import app
 from unittest.mock import MagicMock, patch
 
+with patch("db.init_db"), patch("db.get_conn"):
+  from fastapi.testclient import TestClient
+  from main import app
+
 client = TestClient(app)
 
 @patch("db.save_snapshot")
