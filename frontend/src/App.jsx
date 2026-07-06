@@ -4,24 +4,62 @@ const API_BASE = "/api";
 
 const SPORTS = [
   { label: "NFL", value: "americanfootball_nfl" },
-  { label: "NBA", value: "basketball_nba" },
-  { label: "MLB", value: "baseball_mlb" },
-  { label: "NHL", value: "icehockey_nhl" },
+  { label: "NFL Preseason", value: "americanfootball_nfl_preseason" },
   { label: "NCAAF", value: "americanfootball_ncaaf" },
+  { label: "CFL", value: "americanfootball_cfl" },
+  { label: "UFL", value: "americanfootball_ufl" },
+  { label: "NBA", value: "basketball_nba" },
+  { label: "NBA Preseason", value: "basketball_nba_preseason" },
+  { label: "NBA Summer League", value: "basketball_nba_summer_league" },
   { label: "NCAAB", value: "basketball_ncaab" },
+  { label: "WNBA", value: "basketball_wnba" },
+  { label: "Euroleague", value: "basketball_euroleague" },
+  { label: "NBL", value: "basketball_nbl" },
+  { label: "MLB", value: "baseball_mlb" },
+  { label: "MLB Preseason", value: "baseball_mlb_preseason" },
+  { label: "NHL", value: "icehockey_nhl" },
+  { label: "NHL Preseason", value: "icehockey_nhl_preseason" },
+  { label: "UFC/MMA", value: "mma_mixed_martial_arts" },
+  { label: "AFL", value: "aussierules_afl" },
+  { label: "NRL", value: "rugbyleague_nrl" },
   { label: "MLS", value: "soccer_usa_mls" },
   { label: "EPL", value: "soccer_epl" },
-  { label: "UFC/MMA", value: "mma_mixed_martial_arts" },
-  { label: "WNBA", value: "basketball_wnba" },
+  { label: "La Liga", value: "soccer_spain_la_liga" },
+  { label: "Bundesliga", value: "soccer_germany_bundesliga" },
+  { label: "Serie A", value: "soccer_italy_serie_a" },
+  { label: "Ligue 1", value: "soccer_france_ligue_one" },
+  { label: "Champions League", value: "soccer_uefa_champs_league" },
+  { label: "Europa League", value: "soccer_uefa_europa_league" },
+  { label: "Liga MX", value: "soccer_mexico_ligamx" },
+  { label: "Eredivisie", value: "soccer_netherlands_eredivisie" },
+  { label: "Primeira Liga", value: "soccer_portugal_primeira_liga" },
+  { label: "Saudi Pro League", value: "soccer_saudi_arabia_pro_league" },
+  { label: "Copa Libertadores", value: "soccer_conmebol_copa_libertadores" },
+  { label: "Copa America", value: "soccer_conmebol_copa_america" },
+  { label: "World Cup", value: "soccer_fifa_world_cup" },
 ];
 
 const MARKETS = [
   { label: "Moneyline", value: "h2h" },
   { label: "Spread", value: "spreads" },
   { label: "Over/Under", value: "totals" },
+  { label: "Futures", value: "outrights" },
+  { label: "3-Way", value: "h2h_3_way" },
+  { label: "Both Teams Score", value: "btts" },
+  { label: "Draw No Bet", value: "draw_no_bet" },
+  { label: "Team Totals", value: "team_totals" },
 ];
 
-const MARKET_LABELS = { h2h: "ML", spreads: "SPR", totals: "O/U" };
+const MARKET_LABELS = {
+  h2h: "ML",
+  spreads: "SPR",
+  totals: "O/U",
+  outrights: "FUT",
+  h2h_3_way: "3W",
+  btts: "BTS",
+  draw_no_bet: "DNB",
+  team_totals: "TT",
+};
 
 function Badge({ text }) {
   const colors = {
