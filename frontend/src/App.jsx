@@ -190,18 +190,19 @@ export default function App() {
   const [markets, setMarkets] = useState(["h2h"]);
   const [odds, setOdds] = useState(null);
   const [history, setHistory] = useState(null);
+  const [historySport, setHistorySport] = useState("");
   const [historyGames, setHistoryGames] = useState([]);
   const [historyQuery, setHistoryQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (tab === "history" && historyGames.length === 0) {
-      fetch(`${API_BASE}/odds/history/games`)
-        .then((r) => r.json())
-        .then((json) => setHistoryGames(json.games || []));
-    }
-  }, [tab]);
+    if (tab !== "history" || !historySport) return;
+    fetch(`${API_BASE}/odds/history/games?sport=${encodeURIComponent(historySport)}`)
+      .then((r) => r.json())
+      .then((json) => setHistoryGames(json.games || []))
+      .catch(() => setHistoryGames([]));
+  }, [tab, historySport]);
 
   function toggleMarket(val) {
     setMarkets((prev) =>
@@ -349,15 +350,35 @@ export default function App() {
 
         {tab === "history" && (
           <>
-            <div className="flex gap-3 mb-6">
-              <div className="flex-1">
+            <div className="flex flex-wrap gap-3 mb-6">
+              <div>
+                <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Sport</label>
+                <select
+                  value={historySport}
+                  onChange={(e) => { setHistorySport(e.target.value); setHistoryQuery(""); setHistory(null); setHistoryGames([]); }}
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500"
+                >
+                  <option value="">-- Select a sport --</option>
+                  {SPORTS.map((s) => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-[240px]">
                 <label className="text-xs text-zinc-500 block mb-1.5 uppercase tracking-widest">Select Game</label>
                 <select
                   value={historyQuery}
                   onChange={(e) => setHistoryQuery(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500"
+                  disabled={!historySport}
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-zinc-500 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <option value="">-- Select a game --</option>
+                  <option value="">
+                    {!historySport
+                      ? "-- Select a sport first --"
+                      : historyGames.length === 0
+                      ? "-- No snapshots for this sport --"
+                      : "-- Select a game --"}
+                  </option>
                   {historyGames.map((g) => (
                     <option key={g} value={g}>{g.split(" at ")[0]}</option>
                   ))}
