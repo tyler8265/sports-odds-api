@@ -45,10 +45,9 @@ function OddsCard({ game, data }) {
 
   const price = outcome?.price;
   const stakeNum = parseFloat(stake);
-  const payout = stake && !isNaN(stakeNum) && stakeNum > 0 && price
-    ? (stakeNum * price).toFixed(2)
-    : null;
-  const profit = payout ? (parseFloat(payout) - stakeNum).toFixed(2) : null;
+  const hasStake = stake && !isNaN(stakeNum) && stakeNum > 0 && price;
+  const payout = hasStake ? (stakeNum * price).toFixed(2) : null;
+  const profit = hasStake ? (stakeNum * price - stakeNum).toFixed(2) : null;
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors">
@@ -65,15 +64,23 @@ function OddsCard({ game, data }) {
           )}
         </div>
         <div className="text-right">
-          <p className="text-2xl font-mono font-bold text-emerald-400">
-            {price?.toFixed(2)}
-          </p>
+          {payout ? (
+            <>
+              <p className="text-xs text-zinc-500 mb-0.5">payout</p>
+              <p className="text-2xl font-mono font-bold text-emerald-400">${payout}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-zinc-500 mb-0.5">odds</p>
+              <p className="text-2xl font-mono font-bold text-emerald-400">{price?.toFixed(2)}</p>
+            </>
+          )}
           <p className="text-xs text-zinc-600">{date}</p>
         </div>
       </div>
 
       <div className="border-t border-zinc-800 pt-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">$</span>
             <input
@@ -85,16 +92,10 @@ function OddsCard({ game, data }) {
               className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg pl-6 pr-3 py-1.5 focus:outline-none focus:border-zinc-500 placeholder-zinc-600"
             />
           </div>
-          {payout && (
-            <div className="text-right shrink-0">
-              <p className="text-xs text-zinc-500">payout</p>
-              <p className="text-sm font-mono font-semibold text-emerald-400">${payout}</p>
-            </div>
-          )}
           {profit && (
             <div className="text-right shrink-0">
               <p className="text-xs text-zinc-500">profit</p>
-              <p className="text-sm font-mono font-semibold text-blue-400">+${profit}</p>
+              <p className="text-xl font-mono font-bold text-blue-400">+${profit}</p>
             </div>
           )}
         </div>
