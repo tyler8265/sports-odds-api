@@ -9,6 +9,14 @@ load_dotenv()
 API_KEY = os.getenv("ODDS_API_KEY")
 BASE_URL = "https://api.the-odds-api.com/v4"
 
+###all winnings are based off of a 1.00 bet, so the winnings shown can just be used as a multiplier
+def calculate_winnings(bet: float, multiplier: float):
+  if bet > 0.0:
+    return bet * multiplier
+  else:
+    print("Not an acceptable bet. Please place a bet above 0.")
+    return 0.0
+
 ##the goal is to find the best sportsbook odds per game
 async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, markets: list[BettingMarkets] | None = None):
   async with httpx.AsyncClient() as client:
@@ -57,3 +65,4 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
       import traceback
       traceback.print_exc()
       print(f"Error: {e}")
+

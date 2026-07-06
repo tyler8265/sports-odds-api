@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from odds import fetch_odds
+from odds import fetch_odds, calculate_winnings
 from models import Sport, BettingMarkets, Region
 from db import save_snapshot, get_snapshots, init_db
 from contextlib import asynccontextmanager
