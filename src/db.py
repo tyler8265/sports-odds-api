@@ -25,16 +25,29 @@ def init_db():
             """)
         conn.commit()
 
+
 def save_snapshot(game, odds_data):
-    curr_time = datetime.now(timezone.utc).isoformat()
+  curr_time = datetime.now(timezone.utc)
+  with get_conn() as conn:
+    with conn.cursor() as cursor:
+      cursor.execute(
+        "SELECT fetched_at FROM snapshots WHERE game = %s ORDER BY fetched_at DESC LIMIT 1",
+        (game,)
+      )
+      row = cursor.fetchone()
+      if row:
+        last_fetch = datetime.fromisoformat(row[0])
+        if last_fetch.tzinfo is None:
+          last_fetch = last_fetch.replace(tzinfo=timezone.utc)
+        if (curr_time - last_fetch).total_seconds() < 1800:
+          return
     data = json.dumps(odds_data)
-    with get_conn() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "INSERT INTO snapshots(sport, game, data, fetched_at) VALUES (%s, %s, %s, %s);",
-                (odds_data[1], game, data, curr_time)
-            )
-        conn.commit()
+    with conn.cursor() as cursor:
+      cursor.execute(
+        "INSERT INTO snapshots(sport, game, data, fetched_at) VALUES (%s, %s, %s, %s);",
+        (odds_data[1], game, data, curr_time.isoformat())
+      )
+    conn.commit()
 
 def get_snapshots(game=None):
     snapshots = []
