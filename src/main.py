@@ -28,8 +28,8 @@ async def get_history(game: str):
   return { "historical snapshots": snapshots }
 
 @app.get("/odds/history/games")
-async def get_history_games():
-    games = get_distinct_games()
+async def get_history_games(sport: str = None):
+    games = get_distinct_games(sport)
     return {"games": games}
 
 @app.get("/odds/{sport}")

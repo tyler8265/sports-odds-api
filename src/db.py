@@ -65,9 +65,12 @@ def get_snapshots(game=None):
     return snapshots
 
 
-def get_distinct_games():
+def get_distinct_games(sport=None):
   with get_conn() as conn:
     with conn.cursor() as cursor:
-      cursor.execute("SELECT DISTINCT game FROM snapshots ORDER BY game")
+      if sport:
+        cursor.execute("SELECT DISTINCT game FROM snapshots WHERE sport = %s ORDER BY game", (sport,))
+      else:
+        cursor.execute("SELECT DISTINCT game FROM snapshots ORDER BY game")
       rows = cursor.fetchall()
       return [row[0] for row in rows]
