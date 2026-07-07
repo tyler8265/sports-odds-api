@@ -1,6 +1,6 @@
 # Sports Betting Odds Aggregator
 
-A REST API that fetches real-time sports betting odds from multiple bookmakers, normalizes the data, and returns the best available line per game. Snapshots of every fetch are stored in PostgreSQL on AWS RDS for historical queries and line-movement tracking. Deployed on AWS EC2 with Docker and automated via GitHub Actions CI/CD, with a React/Tailwind UI on Vercel.
+A REST API that fetches real-time sports betting odds from multiple bookmakers, normalizes the data, and returns the best available line per game. Every fetch is snapshotted to PostgreSQL on AWS RDS for historical queries and line-movement tracking. Deployed on AWS EC2 with Docker, with CI/CD automated through GitHub Actions and a React/Tailwind frontend on Vercel.
 
 **Live API:** http://3.133.88.218:8000/docs
 **Frontend:** https://sports-odds-api-bice.vercel.app
