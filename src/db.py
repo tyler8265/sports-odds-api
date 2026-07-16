@@ -43,11 +43,11 @@ def save_snapshot(game, odds_data):
           last_fetch = last_fetch.replace(tzinfo=timezone.utc)
         if (curr_time - last_fetch).total_seconds() < 1800:
           return
-    data = json.dumps(odds_data)
+    data = json.dumps([bet.model_dump() for bet in odds_data])
     with conn.cursor() as cursor:
       cursor.execute(
         "INSERT INTO snapshots(sport, game, data, fetched_at) VALUES (%s, %s, %s, %s);",
-        (odds_data[1], game, data, curr_time.isoformat())
+        (odds_data[0].sport, game, data, curr_time.isoformat())
       )
     conn.commit()
 

@@ -17,11 +17,13 @@ def test_get_odds():
 def test_odds_response_shape():
     res = client.get("/odds/americanfootball_nfl")
     odds = res.json()["odds"]
-    first_game = list(odds.values())[0]
-    assert isinstance(first_game[0], str)
-    assert isinstance(first_game[1], str)
-    assert isinstance(first_game[2], str)
-    assert isinstance(first_game[3], dict)
+    first_game_bets = list(odds.values())[0]
+    assert isinstance(first_game_bets, list)
+    first_bet = first_game_bets[0]
+    assert isinstance(first_bet["bookmaker"], str)
+    assert isinstance(first_bet["sport"], str)
+    assert isinstance(first_bet["market"], str)
+    assert isinstance(first_bet["outcome"], dict)
 
 def test_invalid_sport():
     res = client.get("/odds/fake_sport")

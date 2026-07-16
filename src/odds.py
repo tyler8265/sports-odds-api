@@ -1,6 +1,7 @@
 import httpx
 import os
 import asyncio
+from pydantic import BaseModel
 from models import Sport, Region, BettingMarkets
 from dotenv import load_dotenv
 
@@ -8,6 +9,13 @@ load_dotenv()
 
 API_KEY = os.getenv("ODDS_API_KEY")
 BASE_URL = "https://api.the-odds-api.com/v4"
+
+##named result shape (instead of a positional tuple) so API consumers, e.g. Go structs, can bind by field name
+class BestOdds(BaseModel):
+  bookmaker: str
+  sport: str
+  market: str
+  outcome: dict
 
 ###all winnings are based off of a 1.00 bet, so the winnings shown can just be used as a multiplier
 def calculate_winnings(bet: float, multiplier: float):
@@ -23,13 +31,13 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
     try:
       if markets is None:
         markets = [BettingMarkets.MONEYLINE]
-      sport = sport.value
-      regions = regions.value
-      markets = [m.value for m in markets]
+      sports_str: str = sport.value
+      regions_str: str = regions.value
+      markets_str: str = [m.value for m in markets]
 
       all_data = {}
       for market in markets:
-        res = await client.get(f"{BASE_URL}/sports/{sport}/odds/", params={"apiKey": API_KEY, "regions": regions, "markets": market, "oddsFormat": "decimal"})
+        res = await client.get(f"{BASE_URL}/sports/{sport.value}/odds/", params={"apiKey": API_KEY, "regions": regions.value, "markets": market.value, "oddsFormat": "decimal"})
         data = res.json()
         if not isinstance(data, list):
           continue
@@ -60,19 +68,24 @@ async def fetch_odds(sport: Sport, regions: Region = Region.UNITED_STATES, marke
 
       best_odds_per_game = {}
       for game in odds_per_game.keys():
-        best_odds = 0
-        best_index = 0
-        inner_best_index = 0
+        best_bets = {}
         for i in range(len(odds_per_game[game])):
+          bookmaker = odds_per_game[game][i][0]
+          market = odds_per_game[game][i][1]
+          outcomes = odds_per_game[game][i][2]
+          sport_key = odds_per_game[game][i][3]
           j = 0
-          while j < len(odds_per_game[game][i][2]):
-            old_best_odds = best_odds
-            best_odds = max(odds_per_game[game][i][2][j].get('price'), old_best_odds)
-            if best_odds != old_best_odds:
-              best_index = i
-              inner_best_index = j
+          while j < len(outcomes):
+            bet_key = (market, outcomes[j].get('name'))
+            if bet_key not in best_bets or outcomes[j].get('price') > best_bets[bet_key].outcome.get('price'):
+              best_bets[bet_key] = BestOdds(
+                bookmaker=bookmaker,
+                sport=sport_key,
+                market=market,
+                outcome=outcomes[j]
+              )
             j+=1
-          best_odds_per_game[game] = (odds_per_game[game][best_index][0], odds_per_game[game][best_index][3], odds_per_game[game][best_index][1], odds_per_game[game][best_index][2][inner_best_index])
+        best_odds_per_game[game] = list(best_bets.values())
       return best_odds_per_game
     except Exception as e:
       import traceback

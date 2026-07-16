@@ -90,7 +90,7 @@ function Badge({ text }) {
 }
 
 function OddsCard({ game, data }) {
-  const [bookmaker, sport, market, outcome] = data;
+  const { bookmaker, market, outcome } = data;
   const [stake, setStake] = useState("");
   const teams = game.split(" at ")[0];
   const time = game.split(" at ")[1];
@@ -159,25 +159,28 @@ function OddsCard({ game, data }) {
 
 function HistoryCard({ row }) {
   const [id, sport, game, dataRaw, fetchedAt] = row;
-  const data = typeof dataRaw === "string" ? JSON.parse(dataRaw) : dataRaw;
-  const [bookmaker, sportKey, market, outcome] = data;
+  const bets = typeof dataRaw === "string" ? JSON.parse(dataRaw) : dataRaw;
   const date = new Date(fetchedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
       <div className="flex items-start justify-between gap-2 mb-2">
         <p className="text-sm font-semibold text-white leading-tight">{game.split(" at ")[0]}</p>
-        <Badge text={market} />
+        <p className="text-xs text-zinc-600">Fetched {date}</p>
       </div>
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xs text-zinc-500">{bookmaker}</p>
-          <p className="text-zinc-300 text-sm">{outcome?.name}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-xl font-mono font-bold text-blue-400">{outcome?.price?.toFixed(2)}</p>
-          <p className="text-xs text-zinc-600">Fetched {date}</p>
-        </div>
+      <div className="space-y-2">
+        {bets.map((bet, i) => (
+          <div key={i} className="flex items-end justify-between border-t border-zinc-800 pt-2 first:border-t-0 first:pt-0">
+            <div className="flex items-center gap-2">
+              <Badge text={bet.market} />
+              <div>
+                <p className="text-xs text-zinc-500">{bet.bookmaker}</p>
+                <p className="text-zinc-300 text-sm">{bet.outcome?.name}</p>
+              </div>
+            </div>
+            <p className="text-lg font-mono font-bold text-blue-400">{bet.outcome?.price?.toFixed(2)}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -336,9 +339,11 @@ export default function App() {
 
             {oddsEntries.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {oddsEntries.map(([game, data]) => (
-                  <OddsCard key={game} game={game} data={data} />
-                ))}
+                {oddsEntries.flatMap(([game, bets]) =>
+                  bets.map((bet, i) => (
+                    <OddsCard key={`${game}-${bet.market}-${bet.outcome?.name}-${i}`} game={game} data={bet} />
+                  ))
+                )}
               </div>
             )}
 
