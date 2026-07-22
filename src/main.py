@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from odds import fetch_odds
+from odds import fetch_odds, calculate_winnings
 from models import Sport, BettingMarkets, Region
 from db import save_snapshot, get_snapshots, init_db, get_distinct_games
 from contextlib import asynccontextmanager
@@ -28,8 +28,8 @@ async def get_history(game: str):
   return { "historical snapshots": snapshots }
 
 @app.get("/odds/history/games")
-async def get_history_games(sport: str = ''):
-    games = get_distinct_games(sport)
+async def get_history_games():
+    games = get_distinct_games()
     return {"games": games}
 
 @app.get("/odds/{sport}")
